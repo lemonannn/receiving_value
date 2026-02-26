@@ -1,5 +1,7 @@
 import pandas as pd
 import nfl_data_py as nfl
+from pygam import LinearGAM, s, f, te
+
 
 power_four_schools = [
     # SEC
@@ -12,19 +14,19 @@ power_four_schools = [
     "Illinois", "Indiana", "Iowa", "Maryland", "Michigan",
     "Michigan State", "Minnesota", "Nebraska", "Northwestern",
     "Ohio State", "Penn State", "Purdue", "Rutgers", "UCLA",
-    "USC", "Oregon", "Washington", "Wisconsin",
+    "USC", "Oregon", "Washington", "Wisconsin", 'Michigan St.',
     
     # Big 12
     "Arizona State", "Arizona", "Baylor", "BYU", "UCF",
     "Cincinnati", "Colorado", "Houston", "Iowa State", 
     "Kansas", "Kansas State", "Oklahoma State", "TCU",
-    "Texas Tech", "Utah", "West Virginia",
+    "Texas Tech", "Utah", "West Virginia", "Arizona St", "Oklahoma St.",
     
     # ACC
     "Boston College", "California", "Clemson", "Duke", "Florida State",
     "Georgia Tech", "Louisville", "Miami", "NC State",
     "North Carolina", "Pittsburgh", "Syracuse", "Stanford",
-    "Virginia", "Virginia Tech", "Wake Forest", "SMU",
+    "Virginia", "Virginia Tech", "Wake Forest", "SMU", 'Boston Col.',
     
     # Others
     "Notre Dame", "Washington State", "Oregon State"
@@ -36,7 +38,7 @@ def get_year_table(year):
     receiving_scheme = pd.read_csv(str(year) + '_recieving/receiving_scheme.csv')
     receiving_concept = pd.read_csv(str(year) + '_recieving/receiving_concept.csv')
     
-    receiving_summary = receiving_summary[['player', 'player_id', 'position', 'team_name',
+    receiving_summary = receiving_summary[['player', 'player_id', 'position', 'team_name', 'player_game_count',
                                                  'contested_receptions', 'contested_catch_rate',
                                                  'targets', 'yards', 'touchdowns', 'avg_depth_of_target',
                                                  'drop_rate', 'wide_rate']]
@@ -55,17 +57,49 @@ def get_year_table(year):
     draft_picks = nfl.import_draft_picks()
     draft_picks = draft_picks[draft_picks['season'].isin([int(year)+1])]
     draft_picks = draft_picks[draft_picks['position'] == 'WR']
-    draft_picks = draft_picks[['pick', 'pfr_player_name']]
+    draft_picks = draft_picks[['pick', 'pfr_player_name', 'college']]
     
     recieving_full = pd.merge(recieving, draft_picks, left_on='player', right_on='pfr_player_name')
     
     recieving_full['var_depth'] = recieving_full[['behind_los_yards', 'short_yards', 'medium_yards', 'deep_yards']].var(axis=1)
     
-    recieving_full['is_power_four'] = recieving_full['team_name'].str.lower().isin([school.lower() for school in power_four_schools])
+    recieving_full['perc_deep_yards'] = recieving_full['deep_yards'] / (recieving_full['deep_yards'] + 
+                                                                        recieving_full['medium_yards'] +
+                                                                        recieving_full['short_yards'] + 
+                                                                        recieving_full['behind_los_yards'])
+    
+    recieving_full['yards_per_game'] = recieving_full['yards'] / recieving_full['player_game_count']
+    recieving_full['man_yards_per_game'] = recieving_full['man_yards'] / recieving_full['player_game_count']
+    recieving_full['zone_yards_per_game'] = recieving_full['zone_yards'] / recieving_full['player_game_count']
+    
+    recieving_full['is_power_four'] = (recieving_full['college'].str.lower().isin([school.lower() for school in power_four_schools]) |
+                                       recieving_full['team_name'].str.lower().isin([school.lower() for school in power_four_schools]))
+
 
     return recieving_full
 
 def merge_datasets(datasets):
     return pd.concat(datasets)
+
+def create_gam(dataset):
+    
+    X = dataset[['man_yprr', 'man_yards', 'zone_yprr', 'zone_yards', 'deep_yards', 'medium_yards', 'short_yards', 
+                         'behind_los_yards', 'var_depth', 'drop_rate', 'wide_rate', 'man_avg_depth_of_target', 
+                         'zone_avg_depth_of_target', 'contested_receptions', 'contested_catch_rate', 'is_power_four', 
+                         'perc_deep_yards', 'man_yards_per_game', 'zone_yards_per_game']]
+    
+    y = dataset['pick']
+    
+    gam = LinearGAM(s(0) + s(2) + s(17) + s(18)
+                + f(15))
+    gam.fit(X, y)
+    
+    gam.summary()
+    
+    predicted_slot = gam.predict(X)
+    
+    dataset['predicted_slot'] = predicted_slot
+    
+    dataset[['player', 'predicted_slot']]
     
     
