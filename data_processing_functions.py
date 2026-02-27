@@ -26,10 +26,10 @@ power_four_schools = [
     "Boston College", "California", "Clemson", "Duke", "Florida State",
     "Georgia Tech", "Louisville", "Miami", "NC State",
     "North Carolina", "Pittsburgh", "Syracuse", "Stanford",
-    "Virginia", "Virginia Tech", "Wake Forest", "SMU", 'Boston Col.',
+    "Virginia", "Virginia Tech", "Wake Forest", "SMU", 'Boston Col.', 'Florida St.',
     
     # Others
-    "Notre Dame", "Washington State", "Oregon State"
+    "Notre Dame", "Washington State", "Oregon State", 'Oregon St.'
 ]
 
 def get_year_table(year):
@@ -41,9 +41,10 @@ def get_year_table(year):
     receiving_summary = receiving_summary[['player', 'player_id', 'position', 'team_name', 'player_game_count',
                                                  'contested_receptions', 'contested_catch_rate',
                                                  'targets', 'yards', 'touchdowns', 'avg_depth_of_target',
-                                                 'drop_rate', 'wide_rate']]
+                                                 'drop_rate', 'wide_rate', 'yprr']]
 
-    receiving_depth = receiving_depth[['player_id', 'behind_los_yards', 'short_yards', 'medium_yards', 'deep_yards']]
+    receiving_depth = receiving_depth[['player_id', 'behind_los_yards', 'short_yards', 'medium_yards', 'deep_yards', 'behind_los_yprr', 'behind_los_receptions', 'short_yprr', 'short_receptions',
+               'medium_yprr', 'medium_receptions', 'deep_yprr', 'deep_receptions']]
 
     receiving_scheme = receiving_scheme[['player_id', 'man_targets', 'man_yprr', 'man_avg_depth_of_target', 'man_yards', 
                                                 'zone_targets', 'zone_yprr', 'zone_avg_depth_of_target', 'zone_yards']]
