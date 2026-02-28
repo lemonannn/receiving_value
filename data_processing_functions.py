@@ -27,9 +27,10 @@ power_four_schools = [
     "Georgia Tech", "Louisville", "Miami", "NC State",
     "North Carolina", "Pittsburgh", "Syracuse", "Stanford",
     "Virginia", "Virginia Tech", "Wake Forest", "SMU", 'Boston Col.', 'Florida St.',
+    'Miami (FL)',
     
     # Others
-    "Notre Dame", "Washington State", "Oregon State", 'Oregon St.'
+    "Notre Dame", "Washington State", "Oregon State", 'Oregon St.', 'Washington St.'
 ]
 
 def get_year_table(year):
