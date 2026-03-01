@@ -60,5 +60,5 @@ class NonMonotoneMultiplicativeModel(nn.Module):
         medium = self.f_medium(self.f_med_yprr(med_yards))
         deep = self.f_deep(self.f_deep_yprr(deep_yards))
         
-        output = self.f_prod(behind_los + short + medium + deep) * self.f_efficency(yprr) * self.f_pow4(pow4) + self.f_drop_rate(drop_rate) + self.f_wide_rate(wide_rate)
+        output = self.f_prod(behind_los + short + medium + deep + self.f_yprr(yprr)) * self.f_pow4(pow4) + self.f_drop_rate(drop_rate) + self.f_wide_rate(wide_rate)
         return output
